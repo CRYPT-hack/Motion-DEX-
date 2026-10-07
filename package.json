@@ -1,0 +1,15 @@
+{
+  "name": "motiondex",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "MotionDex — a search engine for free web animations. Handshakes with animation sites (Animista, Animate.css, Loading.io, CSS Loaders, Uiverse…) and indexes them into one searchable directory.",
+  "scripts": {
+    "start": "node server.mjs",
+    "refresh": "node cli/refresh.mjs",
+    "refresh:offline": "node cli/refresh.mjs --offline"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

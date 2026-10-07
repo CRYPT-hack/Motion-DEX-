@@ -1,0 +1,310 @@
+[
+  {
+    "id": "animista",
+    "name": "Animista",
+    "url": "https://animista.net",
+    "tagline": "A huge playground of ready-made CSS animations with live parameter tweaking",
+    "types": [
+      "css"
+    ],
+    "license": "Free",
+    "accent": "#a78bfa",
+    "handshake": "api",
+    "handshakeNote": "fetches animista.net/animista.json (official catalog)",
+    "live": false,
+    "count": 662
+  },
+  {
+    "id": "loadingio",
+    "name": "Loading.io",
+    "url": "https://loading.io",
+    "tagline": "Build and customize CSS/SVG/Lottie loaders — spinners, bars, progress, skeletons",
+    "types": [
+      "css",
+      "svg"
+    ],
+    "license": "Free tier + Pro",
+    "accent": "#38bdf8",
+    "handshake": "scrape",
+    "handshakeNote": "parses the /spinner/ index page",
+    "live": false,
+    "count": 123
+  },
+  {
+    "id": "uiverse",
+    "name": "Uiverse",
+    "url": "https://uiverse.io",
+    "tagline": "Thousands of community-made animated UI elements — free to copy-paste",
+    "types": [
+      "css"
+    ],
+    "license": "Free (open-source elements)",
+    "accent": "#60a5fa",
+    "handshake": "scrape",
+    "handshakeNote": "parses category pages for element deep-links",
+    "live": false,
+    "count": 104
+  },
+  {
+    "id": "animatecss",
+    "name": "Animate.css",
+    "url": "https://animate.style",
+    "tagline": "The classic cross-browser library of plug-and-play CSS animations",
+    "types": [
+      "css"
+    ],
+    "license": "MIT (free)",
+    "accent": "#facc15",
+    "handshake": "raw-css",
+    "handshakeNote": "parses animate.min.css from the animate-css GitHub repo",
+    "live": false,
+    "count": 102
+  },
+  {
+    "id": "hover",
+    "name": "Hover.css",
+    "url": "https://ianlunn.github.io/Hover/",
+    "tagline": "100+ hover effects for buttons and links — transitions, borders, shadows, curls",
+    "types": [
+      "css"
+    ],
+    "license": "Free for personal · paid commercial",
+    "accent": "#fb923c",
+    "handshake": "curated",
+    "handshakeNote": "effect names from the official docs",
+    "live": false,
+    "count": 52
+  },
+  {
+    "id": "easings",
+    "name": "Easings.net",
+    "url": "https://easings.net",
+    "tagline": "31 cubic-bezier easing functions with live curves and copyable values",
+    "types": [
+      "css"
+    ],
+    "license": "Free",
+    "accent": "#4ade80",
+    "handshake": "curated",
+    "handshakeNote": "function list from easings.net",
+    "live": false,
+    "count": 28
+  },
+  {
+    "id": "codepen",
+    "name": "CodePen",
+    "url": "https://codepen.io",
+    "tagline": "Millions of community pens — the biggest animation playground on the web",
+    "types": [
+      "js",
+      "css"
+    ],
+    "license": "Free (community)",
+    "accent": "#94a3b8",
+    "handshake": "search-link",
+    "handshakeNote": "deep-links into codepen.io/search/pens",
+    "live": false,
+    "count": 25
+  },
+  {
+    "id": "aos",
+    "name": "AOS — Animate On Scroll",
+    "url": "https://michalsnik.github.io/aos/",
+    "tagline": "Scroll-triggered reveal animations as simple HTML attributes",
+    "types": [
+      "js",
+      "css"
+    ],
+    "license": "MIT (free)",
+    "accent": "#818cf8",
+    "handshake": "curated",
+    "handshakeNote": "attribute list from the official demo",
+    "live": false,
+    "count": 22
+  },
+  {
+    "id": "lottiefiles",
+    "name": "LottieFiles",
+    "url": "https://lottiefiles.com",
+    "tagline": "The largest library of free Lottie animations — JSON, dotLottie, GIF & MP4",
+    "types": [
+      "lottie",
+      "icon"
+    ],
+    "license": "Free tier + paid",
+    "accent": "#2dd4bf",
+    "handshake": "search-link",
+    "handshakeNote": "deep-links into lottiefiles.com/search",
+    "live": false,
+    "count": 20
+  },
+  {
+    "id": "gsap",
+    "name": "GSAP",
+    "url": "https://gsap.com/docs/v3/Eases/",
+    "tagline": "Industrial-strength JavaScript animation platform + ease visualizer",
+    "types": [
+      "js"
+    ],
+    "license": "Free core · Club plugins paid",
+    "accent": "#a3e635",
+    "handshake": "curated",
+    "handshakeNote": "ease list from the official docs",
+    "live": false,
+    "count": 12
+  },
+  {
+    "id": "lordicon",
+    "name": "Lordicon",
+    "url": "https://lordicon.com",
+    "tagline": "Thousands of powerful animated icons with a free tier",
+    "types": [
+      "icon",
+      "lottie"
+    ],
+    "license": "Free tier + paid",
+    "accent": "#f59e0b",
+    "handshake": "search-link",
+    "handshakeNote": "deep-links into lordicon.com/icons?query=",
+    "live": false,
+    "count": 10
+  },
+  {
+    "id": "animxyz",
+    "name": "AnimXYZ",
+    "url": "https://animxyz.com",
+    "tagline": "Composable animation utilities for Vue & React — combine xyz variables",
+    "types": [
+      "css"
+    ],
+    "license": "MIT (free)",
+    "accent": "#f0abfc",
+    "handshake": "curated",
+    "handshakeNote": "utility list from the official docs",
+    "live": false,
+    "count": 10
+  },
+  {
+    "id": "cssloaders",
+    "name": "CSS Loaders",
+    "url": "https://cssloaders.github.io",
+    "tagline": "300+ pure-CSS loaders and spinners — copy the code, no dependencies",
+    "types": [
+      "css"
+    ],
+    "license": "MIT (free)",
+    "accent": "#34d399",
+    "handshake": "scrape",
+    "handshakeNote": "counts loader chunks in the cssloaders.github.io GitHub repo tree",
+    "live": false,
+    "count": 9
+  },
+  {
+    "id": "codrops",
+    "name": "Codrops",
+    "url": "https://tympanus.net/codrops/",
+    "tagline": "Cutting-edge effect demos with full source code and tutorials",
+    "types": [
+      "js",
+      "css",
+      "svg"
+    ],
+    "license": "Free (tutorial source)",
+    "accent": "#f87171",
+    "handshake": "curated",
+    "handshakeNote": "links to the demos hub",
+    "live": false,
+    "count": 8
+  },
+  {
+    "id": "tailwind",
+    "name": "Tailwind CSS Animations",
+    "url": "https://tailwindcss.com/docs/animation",
+    "tagline": "Built-in animation utilities — spin, ping, pulse, bounce + custom keyframes",
+    "types": [
+      "css"
+    ],
+    "license": "Free",
+    "accent": "#38bdf8",
+    "handshake": "curated",
+    "handshakeNote": "utility list from the official docs",
+    "live": false,
+    "count": 4
+  },
+  {
+    "id": "swishy",
+    "name": "Swishy AI",
+    "url": "https://swishy.ai",
+    "tagline": "AI motion designer — describe an animation, get production-ready motion",
+    "types": [
+      "ai"
+    ],
+    "license": "Freemium",
+    "accent": "#fda4af",
+    "handshake": "curated",
+    "handshakeNote": "verified by hand",
+    "live": false,
+    "count": 2
+  },
+  {
+    "id": "cubicbezier",
+    "name": "cubic-bezier.com",
+    "url": "https://cubic-bezier.com",
+    "tagline": "Interactive cubic-bezier builder — drag, compare and copy easing curves",
+    "types": [
+      "css"
+    ],
+    "license": "Free",
+    "accent": "#22d3ee",
+    "handshake": "curated",
+    "handshakeNote": "verified by hand",
+    "live": false,
+    "count": 1
+  },
+  {
+    "id": "motion",
+    "name": "Motion",
+    "url": "https://motion.dev",
+    "tagline": "The modern vanilla-JS animation engine (formerly Motion One)",
+    "types": [
+      "js"
+    ],
+    "license": "MIT (free)",
+    "accent": "#e879f9",
+    "handshake": "curated",
+    "handshakeNote": "verified by hand",
+    "live": false,
+    "count": 1
+  },
+  {
+    "id": "svgartista",
+    "name": "SVG Artista",
+    "url": "https://svgartista.net",
+    "tagline": "Turn any SVG into a stroke-draw and fill animation — generate CSS instantly",
+    "types": [
+      "svg"
+    ],
+    "license": "Free",
+    "accent": "#fcd34d",
+    "handshake": "curated",
+    "handshakeNote": "verified by hand",
+    "live": false,
+    "count": 1
+  },
+  {
+    "id": "useanimations",
+    "name": "UseAnimations",
+    "url": "https://useanimations.com",
+    "tagline": "Animated icons rendered from After Effects — perfect for micro-interactions",
+    "types": [
+      "icon",
+      "svg"
+    ],
+    "license": "Free with attribution",
+    "accent": "#fca5a5",
+    "handshake": "curated",
+    "handshakeNote": "verified by hand",
+    "live": false,
+    "count": 1
+  }
+]

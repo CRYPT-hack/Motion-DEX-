@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MotionDex — search every free web animation</title>
+  <meta name="description" content="One search across 20+ free animation sites — Animista, LottieFiles, Uiverse, Animate.css, Loading.io, Swishy AI and more. Find an animation, land on the exact page." />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <!-- animated backdrop -->
+  <div class="aurora" aria-hidden="true">
+    <i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i>
+  </div>
+  <div class="grid-overlay" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <a class="brand" href="#top">
+      <span class="brand-bolt" aria-hidden="true">⚡</span>Motion<span class="grad-text">Dex</span>
+    </a>
+    <nav class="topnav">
+      <a href="#directory">Directory</a>
+      <a href="#sources">Sources</a>
+      <a href="#cli">CLI</a>
+    </nav>
+    <span class="pill" id="statPill" title="Indexed animations · sources">…</span>
+  </header>
+
+  <main id="top">
+    <!-- ============ hero ============ -->
+    <section class="hero">
+      <p class="hero-badge reveal" style="--i:0">
+        <span class="dot-live"></span> live handshake with <b id="liveCount">…</b> sites ·
+        <b id="totalAnims">…</b> animations indexed
+      </p>
+      <h1 class="reveal" style="--i:1">
+        Find the perfect<br />
+        <span class="grad-text grad-anim">animation</span> for your next project.
+      </h1>
+      <p class="hero-sub reveal" style="--i:2">
+        One search across Animista, LottieFiles, Uiverse, Animate.css, Loading.io, Swishy AI
+        and 14 more free animation sites. Click a result — land on the exact page.
+      </p>
+      <div class="trending reveal" style="--i:3">
+        <span class="trending-label">Try:</span>
+        <button class="chip chip--ghost" data-q="loader">loader</button>
+        <button class="chip chip--ghost" data-q="fade">fade</button>
+        <button class="chip chip--ghost" data-q="glitch">glitch</button>
+        <button class="chip chip--ghost" data-q="heart">heart</button>
+        <button class="chip chip--ghost" data-q="typewriter">typewriter</button>
+        <button class="chip chip--ghost" data-q="wobble">wobble</button>
+        <button class="chip chip--ghost" data-q="aurora">aurora</button>
+        <button class="chip chip--ghost" data-q="flip">flip</button>
+      </div>
+    </section>
+
+    <!-- ============ sources ticker ============ -->
+    <div class="ticker" aria-hidden="true">
+      <div class="ticker-track" id="tickerTrack"></div>
+    </div>
+
+    <!-- ============ directory ============ -->
+    <section id="directory" class="directory">
+      <div class="toolbar" id="toolbar">
+        <div class="searchwrap">
+          <svg class="search-ico" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <input id="q" type="search" placeholder="Search animations… (fade, loader, glitch, heart)" autocomplete="off" spellcheck="false" aria-label="Search animations" />
+          <kbd>/</kbd>
+          <button class="clear-btn" id="clearBtn" aria-label="Clear search" hidden>✕</button>
+          <div class="suggest" id="suggest" role="listbox" aria-label="Suggestions" hidden></div>
+        </div>
+
+        <div class="filters">
+          <div class="chips" id="chips" role="tablist" aria-label="Filter by category"></div>
+          <div class="filters-right">
+            <select id="siteSel" aria-label="Filter by source site"></select>
+            <button class="icon-btn" id="dice" title="Surprise me — jump to a random animation" aria-label="Random animation">🎲</button>
+          </div>
+        </div>
+
+        <div class="resultline">
+          <span id="count" aria-live="polite">…</span>
+          <button class="link-btn" id="shareSearch">🔗 copy this search</button>
+        </div>
+      </div>
+
+      <div class="grid" id="grid"></div>
+      <div class="sentinel" id="sentinel" aria-hidden="true"></div>
+
+      <div class="empty" id="empty" hidden>
+        <div class="empty-orb" aria-hidden="true"></div>
+        <h3>Nothing indexed for “<span id="emptyQ"></span>” — yet.</h3>
+        <p>The sites below live-update constantly. Route your search straight to them:</p>
+        <div class="empty-actions" id="emptyActions"></div>
+      </div>
+    </section>
+
+    <!-- ============ sources ============ -->
+    <section id="sources" class="sources">
+      <h2 class="section-title">Indexed <span class="grad-text">sources</span></h2>
+      <p class="section-sub">
+        Every site was probed for a machine-readable catalog. Five answered with real handshakes —
+        the rest are indexed through verified deep-links into their own search pages.
+      </p>
+      <div class="source-grid" id="sourceGrid"></div>
+    </section>
+
+    <!-- ============ cli ============ -->
+    <section id="cli" class="cli">
+      <h2 class="section-title">Powered by a <span class="grad-text">handshake CLI</span></h2>
+      <p class="section-sub">
+        MotionDex doesn't guess its index — it asks each site for its catalog, politely.
+        When a site refuses the polite handshake, the CLI falls back to scraping, then to
+        the last successful snapshot. It always comes home with data.
+      </p>
+      <div class="term">
+        <div class="term-bar"><i></i><i></i><i></i><span>motiondex — refresh</span></div>
+        <pre class="term-body"><code><span class="t-prompt">$</span> node cli/refresh.mjs
+
+  🤝 live     662 entries from <span class="t-site">animista</span>    (animista.json — official catalog)
+  🤝 live     102 entries from <span class="t-site">animatecss</span>  (animate.min.css — raw CSS parse)
+  🤝 live     123 entries from <span class="t-site">loadingio</span>   (/spinner/ index — scrape)
+  🤝 live       9 entries from <span class="t-site">cssloaders</span>  (GitHub repo manifest)
+  🤝 live     104 entries from <span class="t-site">uiverse</span>     (category pages — scrape)
+  ✏️  curated  197 entries from <span class="t-site">15 sites</span>   (verified deep-links)
+
+  → 1197 animations · 20 sites · 16 categories
+  → written to data/{animations,sites,meta}.json<span class="t-cursor"></span></code></pre>
+      </div>
+      <div class="cli-notes">
+        <div class="cli-note">
+          <h4>🤝 api</h4>
+          <p>Animista ships its whole catalog as <code>animista.json</code> — 662 variations with default timing.</p>
+        </div>
+        <div class="cli-note">
+          <h4>📄 raw-css</h4>
+          <p>Animate.css class names are parsed straight from <code>animate.min.css</code> on GitHub.</p>
+        </div>
+        <div class="cli-note">
+          <h4>🕸 scrape</h4>
+          <p>Loading.io &amp; Uiverse get fetched with browser headers; if the bot-wall says no, the CLI retries through <code>curl</code>.</p>
+        </div>
+        <div class="cli-note">
+          <h4>🌱 seeds</h4>
+          <p>Every successful handshake is snapshotted to <code>cli/seeds/</code>, so <code>--offline</code> always has fresh-ish data.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>
+      <span class="brand-bolt" aria-hidden="true">⚡</span>
+      MotionDex — built with the very animations it indexes.
+    </p>
+    <p class="footer-muted">
+      All animations belong to their creators and sites — always check each source's license before shipping.
+      Refresh the index with <code>node cli/refresh.mjs</code>.
+    </p>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
