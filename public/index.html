@@ -17,6 +17,34 @@
   </script>
 </head>
 <body>
+  <!-- custom interactive cursor -->
+  <div class="custom-cursor" id="cursor" aria-hidden="true">
+    <div class="cursor-dot" id="cursorDot"></div>
+    <div class="cursor-ring" id="cursorRing"></div>
+  </div>
+  <canvas id="cursorTrailCanvas" aria-hidden="true"></canvas>
+
+  <!-- preloader splash screen -->
+  <div class="preloader" id="preloader" aria-hidden="true">
+    <div class="preloader-inner">
+      <div class="preloader-cube">
+        <div class="cube-face f-front"></div>
+        <div class="cube-face f-back"></div>
+        <div class="cube-face f-right"></div>
+        <div class="cube-face f-left"></div>
+        <div class="cube-face f-top"></div>
+        <div class="cube-face f-bottom"></div>
+      </div>
+      <div class="preloader-brand">
+        <span class="brand-bolt">⚡</span>Motion<span class="grad-text">Dex</span>
+      </div>
+      <div class="preloader-bar">
+        <div class="preloader-fill" id="preloaderFill"></div>
+      </div>
+      <p class="preloader-status" id="preloaderStatus">Connecting to 20 animation sources…</p>
+    </div>
+  </div>
+
   <!-- scroll progress -->
   <div class="progress" id="progress" aria-hidden="true"></div>
 
@@ -35,7 +63,15 @@
       <a href="#sources">Sources</a>
       <a href="#cli">CLI</a>
     </nav>
-    <span class="pill" id="statPill" title="Indexed animations · sources">…</span>
+    <div class="topbar-actions">
+      <button class="sound-toggle" id="soundToggle" title="Toggle ambient audio" aria-label="Toggle ambient audio">
+        <span class="sound-waves" aria-hidden="true">
+          <i></i><i></i><i></i><i></i>
+        </span>
+        <span class="sound-label">Audio</span>
+      </button>
+      <span class="pill" id="statPill" title="Indexed animations · sources">…</span>
+    </div>
   </header>
 
   <main id="top">

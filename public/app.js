@@ -55,10 +55,25 @@ let toastTimer;
 /* ------------------------------ boot ------------------------------ */
 
 async function boot() {
+  const preloaderFill = document.getElementById('preloaderFill');
+  const preloaderStatus = document.getElementById('preloaderStatus');
+  const preloader = document.getElementById('preloader');
+
+  if (preloaderFill) preloaderFill.style.width = '25%';
+
   const [anims, sites, meta] = await Promise.all([
-    fetch('/data/animations.json').then(r => r.json()),
-    fetch('/data/sites.json').then(r => r.json()),
-    fetch('/data/meta.json').then(r => r.json()),
+    fetch('/data/animations.json').then(r => {
+      if (preloaderFill) preloaderFill.style.width = '55%';
+      return r.json();
+    }),
+    fetch('/data/sites.json').then(r => {
+      if (preloaderFill) preloaderFill.style.width = '75%';
+      return r.json();
+    }),
+    fetch('/data/meta.json').then(r => {
+      if (preloaderFill) preloaderFill.style.width = '90%';
+      return r.json();
+    }),
   ]);
 
   entries = anims.map(e => ({ ...e, nameL: e.name.toLowerCase() }));
@@ -96,6 +111,12 @@ async function boot() {
   buildSiteSelect(sites);
 
   apply(true);
+
+  if (preloaderFill) preloaderFill.style.width = '100%';
+  if (preloaderStatus) preloaderStatus.textContent = 'Ready!';
+  setTimeout(() => {
+    if (preloader) preloader.classList.add('done');
+  }, 350);
 }
 
 /* ------------------------------ scoring ------------------------------ */
@@ -859,6 +880,244 @@ if (termCode) {
     );
   }, { threshold: 0.35 });
   termIO.observe(termCode.closest('.term'));
+}
+
+/* ------------------------------ custom cursor & particle trail ------------------------------ */
+
+(function initCustomCursor() {
+  if (matchMedia('(hover: none), (pointer: coarse)').matches) return;
+
+  const cursor = document.getElementById('cursor');
+  const dot = document.getElementById('cursorDot');
+  const ring = document.getElementById('cursorRing');
+  const trailCanvas = document.getElementById('cursorTrailCanvas');
+  if (!cursor || !dot || !ring || !trailCanvas) return;
+
+  document.body.classList.add('has-custom-cursor');
+
+  let mouseX = -100, mouseY = -100;
+  let ringX = -100, ringY = -100;
+  let isHovering = false;
+  let hasMoved = false;
+
+  // Trail particles canvas setup
+  const ctx = trailCanvas.getContext('2d');
+  let tW = (trailCanvas.width = window.innerWidth);
+  let tH = (trailCanvas.height = window.innerHeight);
+
+  window.addEventListener('resize', () => {
+    tW = trailCanvas.width = window.innerWidth;
+    tH = trailCanvas.height = window.innerHeight;
+  });
+
+  const trailParticles = [];
+  const trailColors = [
+    [139, 92, 246], // violet
+    [34, 211, 238],  // cyan
+    [244, 114, 182], // pink
+  ];
+
+  window.addEventListener('pointermove', ev => {
+    mouseX = ev.clientX;
+    mouseY = ev.clientY;
+
+    if (!hasMoved) {
+      hasMoved = true;
+      cursor.classList.add('active');
+      ringX = mouseX;
+      ringY = mouseY;
+    }
+
+    dot.style.left = `${mouseX}px`;
+    dot.style.top = `${mouseY}px`;
+
+    // Emit trail particle
+    if (Math.random() < 0.45 && !reduceMotion()) {
+      const col = trailColors[Math.floor(Math.random() * trailColors.length)];
+      trailParticles.push({
+        x: mouseX + (Math.random() - 0.5) * 8,
+        y: mouseY + (Math.random() - 0.5) * 8,
+        vx: (Math.random() - 0.5) * 0.8,
+        vy: (Math.random() - 0.5) * 0.8 - 0.3,
+        size: 1.5 + Math.random() * 2,
+        alpha: 0.65,
+        decay: 0.02 + Math.random() * 0.02,
+        color: col,
+      });
+      if (trailParticles.length > 50) trailParticles.shift();
+    }
+
+    // Check hovering state
+    const target = ev.target;
+    const isInteractive = Boolean(
+      target.closest('a, button, input, select, .card, .source-card, .stat, .chip, .term, [role="button"], [role="link"]')
+    );
+    if (isInteractive !== isHovering) {
+      isHovering = isInteractive;
+      cursor.classList.toggle('hovering', isHovering);
+    }
+  });
+
+  // Smooth lerp loop for cursor ring & particle trail
+  function cursorLoop() {
+    requestAnimationFrame(cursorLoop);
+
+    // Lerp ring
+    ringX += (mouseX - ringX) * 0.22;
+    ringY += (mouseY - ringY) * 0.22;
+    ring.style.left = `${ringX.toFixed(1)}px`;
+    ring.style.top = `${ringY.toFixed(1)}px`;
+
+    // Render trail particles
+    if (trailParticles.length > 0) {
+      ctx.clearRect(0, 0, tW, tH);
+      for (let i = trailParticles.length - 1; i >= 0; i--) {
+        const p = trailParticles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= p.decay;
+        p.size *= 0.98;
+
+        if (p.alpha <= 0) {
+          trailParticles.splice(i, 1);
+          continue;
+        }
+
+        const [r, g, b] = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, Math.max(0.2, p.size), 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${r},${g},${b},${p.alpha.toFixed(2)})`;
+        ctx.shadowColor = `rgba(${r},${g},${b},0.8)`;
+        ctx.shadowBlur = 6;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+    }
+  }
+  requestAnimationFrame(cursorLoop);
+})();
+
+/* ------------------------------ ambient web audio synth ------------------------------ */
+
+const SoundEngine = (function() {
+  let ctx = null;
+  let isMuted = true;
+  let droneGain = null;
+  let oscs = [];
+
+  function initCtx() {
+    if (ctx) return;
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    ctx = new AudioCtx();
+
+    // Master drone gain
+    droneGain = ctx.createGain();
+    droneGain.gain.setValueAtTime(0, ctx.currentTime);
+
+    // Lowpass filter for dreamy celestial warmth
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(280, ctx.currentTime);
+
+    // Chords: D minor ambient pad (D2, A2, F3, C4)
+    const freqs = [73.42, 110.0, 174.61, 261.63];
+    oscs = freqs.map((f, i) => {
+      const osc = ctx.createOscillator();
+      osc.type = i % 2 === 0 ? 'sine' : 'triangle';
+      osc.frequency.setValueAtTime(f, ctx.currentTime);
+
+      const oscGain = ctx.createGain();
+      oscGain.gain.setValueAtTime(0.04 / (i + 1), ctx.currentTime);
+
+      osc.connect(oscGain);
+      oscGain.connect(filter);
+      osc.start();
+      return osc;
+    });
+
+    filter.connect(droneGain);
+    droneGain.connect(ctx.destination);
+  }
+
+  function toggle() {
+    initCtx();
+    if (!ctx) return false;
+    if (ctx.state === 'suspended') ctx.resume();
+
+    isMuted = !isMuted;
+    const now = ctx.currentTime;
+    if (!isMuted) {
+      droneGain.gain.cancelScheduledValues(now);
+      droneGain.gain.linearRampToValueAtTime(0.08, now + 1.2);
+    } else {
+      droneGain.gain.cancelScheduledValues(now);
+      droneGain.gain.linearRampToValueAtTime(0, now + 0.6);
+    }
+    return !isMuted;
+  }
+
+  function playUiBlip(freq = 900, duration = 0.05) {
+    if (isMuted || !ctx) return;
+    try {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now);
+      osc.frequency.exponentialRampToValueAtTime(freq * 1.5, now + duration);
+
+      g.gain.setValueAtTime(0.025, now);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+      osc.connect(g);
+      g.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + duration);
+    } catch (_) {}
+  }
+
+  function playChime() {
+    if (isMuted || !ctx) return;
+    try {
+      const now = ctx.currentTime;
+      [880, 1318.5].forEach((f, idx) => {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f, now + idx * 0.08);
+        g.gain.setValueAtTime(0.04, now + idx * 0.08);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 0.35);
+
+        osc.connect(g);
+        g.connect(ctx.destination);
+        osc.start(now + idx * 0.08);
+        osc.stop(now + idx * 0.08 + 0.35);
+      });
+    } catch (_) {}
+  }
+
+  return { toggle, playUiBlip, playChime };
+})();
+
+// Sound toggle button click handler
+const soundToggle = document.getElementById('soundToggle');
+if (soundToggle) {
+  soundToggle.addEventListener('click', () => {
+    const isPlaying = SoundEngine.toggle();
+    soundToggle.classList.toggle('active', isPlaying);
+    const label = soundToggle.querySelector('.sound-label');
+    if (label) label.textContent = isPlaying ? 'Audio: ON' : 'Audio: OFF';
+    if (isPlaying) SoundEngine.playChime();
+  });
+}
+
+// Add subtle sound cues to dice and share actions
+if (els.dice) {
+  els.dice.addEventListener('click', () => SoundEngine.playChime());
+}
+if (els.shareSearch) {
+  els.shareSearch.addEventListener('click', () => SoundEngine.playChime());
 }
 
 boot();
