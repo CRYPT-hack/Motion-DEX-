@@ -89,7 +89,12 @@ for (const src of sources) {
     await writeFile(join(SEED_DIR, `${src.id}.json`), JSON.stringify(payload));
   }
 
-  for (const s of payload.sites ?? []) sites.set(s.id, { ...s, live: mode === 'live' });
+  for (const s of payload.sites ?? []) {
+    // A seed snapshot is itself the product of a previous real handshake, so
+    // catalog-based sources stay "live" even when restored offline.
+    const seedOfLiveCatalog = mode === 'seed' && ['api', 'raw-css', 'scrape'].includes(s.handshake);
+    sites.set(s.id, { ...s, live: mode === 'live' || seedOfLiveCatalog });
+  }
   entries.push(...payload.entries);
   report.push([src.id, mode, payload.entries.length, (payload.sites ?? []).map(s => s.id).join(', ')]);
 }

@@ -77,6 +77,17 @@ async function boot() {
   document.getElementById('q').placeholder =
     `Search ${entries.length.toLocaleString()} animations… (fade, loader, glitch, heart)`;
 
+  // stat counters — targets are read by the count-up observer
+  const statTargets = {
+    totalAnimsStat: entries.length,
+    sitesStat: sites.length,
+    catsStat: Object.keys(meta.countsByCategory).length,
+    liveStat: meta.liveSources.length,
+  };
+  for (const el of document.querySelectorAll('[data-count]')) {
+    el.dataset.target = statTargets[el.dataset.count] ?? 0;
+  }
+
   restoreHash();
 
   buildTicker(sites);
@@ -481,22 +492,28 @@ function showToast(msg) {
   toastTimer = setTimeout(() => els.toast.classList.remove('show'), 2200);
 }
 
-/* ------------------------------ 3D tilt on cards ------------------------------ */
+/* ------------------------------ 3D tilt + spotlight on cards ------------------------------ */
 
-const tiltRaf = { pending: false, card: null, x: 0, y: 0 };
+const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const tiltRaf = { pending: false, card: null, x: 0, y: 0, mx: 0, my: 0 };
 els.grid.addEventListener('pointermove', ev => {
-  if (ev.pointerType === 'touch' || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (ev.pointerType === 'touch' || reduceMotion()) return;
   const card = ev.target.closest('.card');
   if (!card) return;
   const r = card.getBoundingClientRect();
   tiltRaf.card = card;
   tiltRaf.x = ((ev.clientY - r.top) / r.height - 0.5) * -7;
   tiltRaf.y = ((ev.clientX - r.left) / r.width - 0.5) * 9;
+  tiltRaf.mx = ev.clientX - r.left;
+  tiltRaf.my = ev.clientY - r.top;
   if (!tiltRaf.pending) {
     tiltRaf.pending = true;
     requestAnimationFrame(() => {
-      tiltRaf.card.style.setProperty('--rx', `${tiltRaf.x.toFixed(2)}deg`);
-      tiltRaf.card.style.setProperty('--ry', `${tiltRaf.y.toFixed(2)}deg`);
+      const s = tiltRaf.card.style;
+      s.setProperty('--rx', `${tiltRaf.x.toFixed(2)}deg`);
+      s.setProperty('--ry', `${tiltRaf.y.toFixed(2)}deg`);
+      s.setProperty('--mx', `${tiltRaf.mx.toFixed(0)}px`);
+      s.setProperty('--my', `${tiltRaf.my.toFixed(0)}px`);
       tiltRaf.pending = false;
     });
   }
@@ -514,5 +531,86 @@ els.grid.addEventListener('pointerout', ev => {
 new IntersectionObserver(ents => {
   if (ents[0].isIntersecting && rendered < filtered.length) renderMore();
 }, { rootMargin: '900px' }).observe(els.sentinel);
+
+/* ------------------------------ scroll choreography ------------------------------ */
+
+// scroll progress bar + aurora parallax + toolbar wake, all on one rAF
+const progressBar = document.getElementById('progress');
+const aurora = document.getElementById('aurora');
+const toolbar = document.getElementById('toolbar');
+let scrollRaf = false;
+function onScroll() {
+  if (scrollRaf) return;
+  scrollRaf = true;
+  requestAnimationFrame(() => {
+    const doc = document.documentElement;
+    const max = doc.scrollHeight - innerHeight;
+    progressBar.style.transform = `scaleX(${max > 0 ? (scrollY / max).toFixed(4) : 0})`;
+    if (!reduceMotion()) aurora.style.transform = `translateY(${(scrollY * 0.16).toFixed(1)}px)`;
+    toolbar.classList.toggle('armed', scrollY > innerHeight * 0.5);
+    scrollRaf = false;
+  });
+}
+addEventListener('scroll', onScroll, { passive: true });
+onScroll();
+
+// hero cursor spotlight
+const hero = document.getElementById('hero');
+hero.addEventListener('pointermove', ev => {
+  const r = hero.getBoundingClientRect();
+  hero.style.setProperty('--hx', `${(ev.clientX - r.left).toFixed(0)}px`);
+  hero.style.setProperty('--hy', `${(ev.clientY - r.top).toFixed(0)}px`);
+});
+
+// reveal-on-scroll (our own AOS) + section title underline draws
+const revealIO = new IntersectionObserver(
+  ents => ents.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.classList.add('in');
+    revealIO.unobserve(e.target);
+  }),
+  { threshold: 0.15 },
+);
+document.querySelectorAll('[data-reveal]').forEach(el => revealIO.observe(el));
+
+// stat count-up — easeOutExpo, tabular numerals keep it steady
+const statsIO = new IntersectionObserver(ents => {
+  if (!ents[0].isIntersecting) return;
+  statsIO.disconnect();
+  for (const el of document.querySelectorAll('[data-count]')) {
+    const target = Number(el.dataset.target ?? 0);
+    const t0 = performance.now();
+    const dur = 1400;
+    (function tick(now) {
+      const p = Math.min((now - t0) / dur, 1);
+      const eased = 1 - Math.pow(2, -10 * p);
+      el.textContent = Math.round(target * (p === 1 ? 1 : eased)).toLocaleString();
+      if (p < 1) requestAnimationFrame(tick);
+    })(t0);
+  }
+}, { threshold: 0.4 });
+const statsSec = document.querySelector('.stats');
+if (statsSec) statsIO.observe(statsSec);
+
+// terminal typewriter — lines cascade in when the CLI section scrolls into view
+const termCode = document.querySelector('.term-body code');
+if (termCode) {
+  // wrap each line so it can be revealed one by one; colored spans stay intact
+  const lines = termCode.innerHTML.split('\n');
+  termCode.innerHTML = lines
+    .map((l, i) => `<span class="t-line" style="display:block;opacity:0;transform:translateY(6px);transition:opacity .3s var(--ease-out, ease),transform .3s ease;transition-delay:${(i * 130)}ms">${l || ' '}</span>`)
+    .join('');
+  const termIO = new IntersectionObserver(ents => {
+    if (!ents[0].isIntersecting) return;
+    termIO.disconnect();
+    requestAnimationFrame(() =>
+      termCode.querySelectorAll('.t-line').forEach(l => {
+        l.style.opacity = '1';
+        l.style.transform = 'none';
+      }),
+    );
+  }, { threshold: 0.35 });
+  termIO.observe(termCode.closest('.term'));
+}
 
 boot();

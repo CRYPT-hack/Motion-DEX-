@@ -1,9 +1,15 @@
 {
-  "generatedAt": "2026-10-07T22:21:24.398Z",
+  "generatedAt": "2026-10-07T22:45:08.206Z",
   "totalAnimations": 1197,
   "totalSites": 20,
-  "liveSources": [],
-  "offlineMode": true,
+  "liveSources": [
+    "animista",
+    "loadingio",
+    "uiverse",
+    "animatecss",
+    "cssloaders"
+  ],
+  "offlineMode": false,
   "countsBySite": {
     "animista": 662,
     "animatecss": 102,

@@ -9,8 +9,11 @@
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
+  <!-- scroll progress -->
+  <div class="progress" id="progress" aria-hidden="true"></div>
+
   <!-- animated backdrop -->
-  <div class="aurora" aria-hidden="true">
+  <div class="aurora" id="aurora" aria-hidden="true">
     <i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i>
   </div>
   <div class="grid-overlay" aria-hidden="true"></div>
@@ -29,14 +32,18 @@
 
   <main id="top">
     <!-- ============ hero ============ -->
-    <section class="hero">
+    <section class="hero" id="hero">
       <p class="hero-badge reveal" style="--i:0">
         <span class="dot-live"></span> live handshake with <b id="liveCount">…</b> sites ·
         <b id="totalAnims">…</b> animations indexed
       </p>
-      <h1 class="reveal" style="--i:1">
-        Find the perfect<br />
-        <span class="grad-text grad-anim">animation</span> for your next project.
+      <h1 aria-label="Find the perfect animation for your next project.">
+        <span class="h-line" style="--l:0"><span>Find the perfect</span></span>
+        <span class="h-line" style="--l:1"><span
+          ><span class="grad-text grad-anim rotator" aria-hidden="true"
+            ><span style="--w:0">animation</span><span style="--w:1">loader</span><span style="--w:2">hover FX</span><span style="--w:3">easing</span></span
+          ></span></span>
+        <span class="h-line" style="--l:2"><span>for your next project.</span></span>
       </h1>
       <p class="hero-sub reveal" style="--i:2">
         One search across Animista, LottieFiles, Uiverse, Animate.css, Loading.io, Swishy AI
@@ -52,6 +59,26 @@
         <button class="chip chip--ghost" data-q="wobble">wobble</button>
         <button class="chip chip--ghost" data-q="aurora">aurora</button>
         <button class="chip chip--ghost" data-q="flip">flip</button>
+      </div>
+      <div class="scroll-cue" aria-hidden="true">
+        <span class="mouse"><i></i></span>
+        scroll
+      </div>
+    </section>
+
+    <!-- ============ stats ============ -->
+    <section class="stats" aria-label="Index statistics">
+      <div class="stat" style="--c:#8b5cf6" data-reveal>
+        <b data-count="totalAnimsStat">0</b><span>animations</span>
+      </div>
+      <div class="stat" style="--c:#22d3ee" data-reveal>
+        <b data-count="sitesStat">0</b><span>sources</span>
+      </div>
+      <div class="stat" style="--c:#f472b6" data-reveal>
+        <b data-count="catsStat">0</b><span>categories</span>
+      </div>
+      <div class="stat" style="--c:#fbbf24" data-reveal>
+        <b data-count="liveStat">0</b><span>live handshakes</span>
       </div>
     </section>
 
@@ -101,8 +128,8 @@
 
     <!-- ============ sources ============ -->
     <section id="sources" class="sources">
-      <h2 class="section-title">Indexed <span class="grad-text">sources</span></h2>
-      <p class="section-sub">
+      <h2 class="section-title" data-reveal>Indexed <span class="grad-text">sources</span></h2>
+      <p class="section-sub" data-reveal style="--d:1">
         Every site was probed for a machine-readable catalog. Five answered with real handshakes —
         the rest are indexed through verified deep-links into their own search pages.
       </p>
@@ -111,8 +138,8 @@
 
     <!-- ============ cli ============ -->
     <section id="cli" class="cli">
-      <h2 class="section-title">Powered by a <span class="grad-text">handshake CLI</span></h2>
-      <p class="section-sub">
+      <h2 class="section-title" data-reveal>Powered by a <span class="grad-text">handshake CLI</span></h2>
+      <p class="section-sub" data-reveal style="--d:1">
         MotionDex doesn't guess its index — it asks each site for its catalog, politely.
         When a site refuses the polite handshake, the CLI falls back to scraping, then to
         the last successful snapshot. It always comes home with data.

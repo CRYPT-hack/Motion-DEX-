@@ -11,7 +11,7 @@
     "accent": "#a78bfa",
     "handshake": "api",
     "handshakeNote": "fetches animista.net/animista.json (official catalog)",
-    "live": false,
+    "live": true,
     "count": 662
   },
   {
@@ -27,7 +27,7 @@
     "accent": "#38bdf8",
     "handshake": "scrape",
     "handshakeNote": "parses the /spinner/ index page",
-    "live": false,
+    "live": true,
     "count": 123
   },
   {
@@ -42,7 +42,7 @@
     "accent": "#60a5fa",
     "handshake": "scrape",
     "handshakeNote": "parses category pages for element deep-links",
-    "live": false,
+    "live": true,
     "count": 104
   },
   {
@@ -57,7 +57,7 @@
     "accent": "#facc15",
     "handshake": "raw-css",
     "handshakeNote": "parses animate.min.css from the animate-css GitHub repo",
-    "live": false,
+    "live": true,
     "count": 102
   },
   {
@@ -196,7 +196,7 @@
     "accent": "#34d399",
     "handshake": "scrape",
     "handshakeNote": "counts loader chunks in the cssloaders.github.io GitHub repo tree",
-    "live": false,
+    "live": true,
     "count": 9
   },
   {
