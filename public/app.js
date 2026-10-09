@@ -1120,4 +1120,37 @@ if (els.shareSearch) {
   els.shareSearch.addEventListener('click', () => SoundEngine.playChime());
 }
 
+/* ------------------------------ hero word rotator ------------------------------ */
+
+(function initWordRotator() {
+  const rotator = document.getElementById('heroRotator');
+  if (!rotator) return;
+  const words = Array.from(rotator.children);
+  if (words.length <= 1) return;
+
+  let currentIdx = 0;
+  words.forEach((w, i) => {
+    if (i === 0) w.classList.add('active');
+    else w.classList.remove('active', 'exit');
+  });
+
+  if (reduceMotion()) return;
+
+  setInterval(() => {
+    const prev = words[currentIdx];
+    currentIdx = (currentIdx + 1) % words.length;
+    const next = words[currentIdx];
+
+    prev.classList.remove('active');
+    prev.classList.add('exit');
+
+    next.classList.remove('exit');
+    next.classList.add('active');
+
+    setTimeout(() => {
+      prev.classList.remove('exit');
+    }, 550);
+  }, 2800);
+})();
+
 boot();

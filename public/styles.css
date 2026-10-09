@@ -268,22 +268,30 @@ code, kbd {
   100% { background-position: 0% 50%; }
 }
 
-/* rotating word — a mini vertical carousel */
+/* rotating word — smooth, bulletproof 3D carousel */
 .rotator {
   position: relative; display: inline-grid; vertical-align: bottom;
-  height: 1.12em; overflow: hidden; text-align: left;
+  height: 1.15em; overflow: hidden; text-align: left;
 }
 .rotator > span {
   grid-area: 1 / 1;
   display: inline-flex; align-items: center;
-  opacity: 0; transform: translateY(60%) rotateX(-40deg);
-  animation: wordCycle 12s var(--easeOut) infinite;
-  animation-delay: calc(var(--w) * 3s);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(110%) rotateX(-45deg);
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
 }
-@keyframes wordCycle {
-  0%, 22% { opacity: 0; transform: translateY(60%) rotateX(-40deg); }
-  6%, 16% { opacity: 1; transform: translateY(0) rotateX(0); }
-  28%, 100% { opacity: 0; transform: translateY(-60%) rotateX(40deg); }
+.rotator > span.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) rotateX(0deg);
+  pointer-events: auto;
+}
+.rotator > span.exit {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-110%) rotateX(45deg);
 }
 
 .hero-sub {
@@ -1220,7 +1228,8 @@ code, kbd {
     transition-duration: 0.01ms !important;
   }
   html { scroll-behavior: auto; }
-  .aurora, .grid-overlay, body::after { display: none; }
-  .h-line > span, .rotator > span, .reveal, .scroll-cue { opacity: 1; transform: none; }
+  .h-line > span, .reveal, .scroll-cue { opacity: 1; transform: none; }
+  .rotator > span:not(.active) { display: none !important; }
+  .rotator > span.active { opacity: 1 !important; transform: none !important; visibility: visible !important; }
   [data-reveal] { opacity: 1; transform: none; }
 }
