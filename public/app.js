@@ -615,22 +615,95 @@ new IntersectionObserver(ents => {
   if (ents[0].isIntersecting && rendered < filtered.length) renderMore();
 }, { rootMargin: '900px' }).observe(els.sentinel);
 
-/* ------------------------------ scroll choreography ------------------------------ */
+/* ------------------------------ scroll choreography & 3D transitions ------------------------------ */
 
-// scroll progress bar + aurora parallax + toolbar wake, all on one rAF
+// scroll progress bar + aurora parallax + toolbar wake + 3D scroll-linked transitions
 const progressBar = document.getElementById('progress');
 const aurora = document.getElementById('aurora');
 const toolbar = document.getElementById('toolbar');
+const hero = document.getElementById('hero');
+const heroCanvasWrap = document.getElementById('heroCanvasWrap');
+const heroH1 = document.querySelector('.hero h1');
+const heroSub = document.querySelector('.hero-sub');
+const statsSec = document.getElementById('statsSec');
+const cliTerm = document.getElementById('cliTerm');
+const sourceSection = document.getElementById('sources');
+
 let scrollRaf = false;
 function onScroll() {
   if (scrollRaf) return;
   scrollRaf = true;
   requestAnimationFrame(() => {
     const doc = document.documentElement;
+    const sy = window.scrollY;
     const max = doc.scrollHeight - innerHeight;
-    progressBar.style.transform = `scaleX(${max > 0 ? (scrollY / max).toFixed(4) : 0})`;
-    if (!reduceMotion()) aurora.style.transform = `translateY(${(scrollY * 0.16).toFixed(1)}px)`;
-    toolbar.classList.toggle('armed', scrollY > innerHeight * 0.5);
+    progressBar.style.transform = `scaleX(${max > 0 ? (sy / max).toFixed(4) : 0})`;
+
+    if (!reduceMotion()) {
+      // 1. Aurora parallax
+      aurora.style.transform = `translateY(${(sy * 0.16).toFixed(1)}px)`;
+
+      // 2. Hero 3D recession: push hero back into depth as user scrolls down
+      if (sy < innerHeight * 1.2) {
+        const p = Math.min(sy / (innerHeight * 0.9), 1);
+        const tz = -p * 80;
+        const ty = p * 40;
+        const rotX = p * 6;
+
+        if (heroH1) heroH1.style.transform = `perspective(1000px) translate3d(0, ${ty.toFixed(1)}px, ${tz.toFixed(1)}px) rotateX(${rotX.toFixed(2)}deg)`;
+        if (heroSub) heroSub.style.transform = `perspective(1000px) translate3d(0, ${(ty * 0.8).toFixed(1)}px, ${(tz * 0.7).toFixed(1)}px)`;
+        if (heroCanvasWrap) {
+          heroCanvasWrap.style.transform = `translate3d(0, ${(sy * 0.28).toFixed(1)}px, 0) scale(${Math.max(0.85, 1 - p * 0.15).toFixed(3)})`;
+          heroCanvasWrap.style.opacity = `${(1 - p * 0.7).toFixed(3)}`;
+        }
+      }
+
+      // 3. Stats section 3D morphing on scroll
+      if (statsSec) {
+        const r = statsSec.getBoundingClientRect();
+        const vh = window.innerHeight;
+        if (r.top < vh && r.bottom > 0) {
+          const centerDist = (r.top + r.height * 0.5 - vh * 0.5) / vh;
+          const rotX = Math.max(-10, Math.min(10, centerDist * 14));
+          const tz = (1 - Math.abs(centerDist) * 1.5) * 12;
+          statsSec.style.transform = `perspective(1200px) rotateX(${(-rotX).toFixed(2)}deg) translateZ(${Math.max(0, tz).toFixed(1)}px)`;
+        }
+      }
+
+      // 4. Source cards 3D orbit wave on scroll
+      if (sourceSection && els.sourceGrid) {
+        const sRect = sourceSection.getBoundingClientRect();
+        const vh = window.innerHeight;
+        if (sRect.top < vh + 100 && sRect.bottom > -100) {
+          const cards = els.sourceGrid.children;
+          const len = cards.length;
+          const sProgress = (vh - sRect.top) / (vh + sRect.height);
+          for (let i = 0; i < len; i++) {
+            const card = cards[i];
+            if (!card.matches(':hover')) {
+              const phase = (sProgress * 4.2) + (i * 0.45);
+              const waveY = Math.sin(phase) * 3.2;
+              const waveX = Math.cos(phase * 0.8) * 2;
+              const waveZ = Math.sin(phase + 1) * 6;
+              card.style.transform = `perspective(1000px) rotateY(${waveY.toFixed(2)}deg) rotateX(${waveX.toFixed(2)}deg) translateZ(${waveZ.toFixed(1)}px)`;
+            }
+          }
+        }
+      }
+
+      // 5. CLI terminal 3D entrance tilt
+      if (cliTerm && !cliTerm.matches(':hover')) {
+        const tRect = cliTerm.getBoundingClientRect();
+        const vh = window.innerHeight;
+        if (tRect.top < vh && tRect.bottom > 0) {
+          const dist = (tRect.top + tRect.height * 0.5 - vh * 0.5) / vh;
+          const termTiltX = Math.max(-9, Math.min(9, dist * 12));
+          cliTerm.style.transform = `perspective(1000px) rotateX(${(-termTiltX).toFixed(2)}deg)`;
+        }
+      }
+    }
+
+    toolbar.classList.toggle('armed', sy > innerHeight * 0.5);
     scrollRaf = false;
   });
 }
@@ -638,12 +711,98 @@ addEventListener('scroll', onScroll, { passive: true });
 onScroll();
 
 // hero cursor spotlight
-const hero = document.getElementById('hero');
-hero.addEventListener('pointermove', ev => {
-  const r = hero.getBoundingClientRect();
-  hero.style.setProperty('--hx', `${(ev.clientX - r.left).toFixed(0)}px`);
-  hero.style.setProperty('--hy', `${(ev.clientY - r.top).toFixed(0)}px`);
-});
+if (hero) {
+  hero.addEventListener('pointermove', ev => {
+    const r = hero.getBoundingClientRect();
+    hero.style.setProperty('--hx', `${(ev.clientX - r.left).toFixed(0)}px`);
+    hero.style.setProperty('--hy', `${(ev.clientY - r.top).toFixed(0)}px`);
+  });
+}
+
+/* ------------------------------ 3D card tilt & holographic physics ------------------------------ */
+
+// 1. Stat cards 3D tilt
+if (statsSec) {
+  statsSec.addEventListener('pointermove', ev => {
+    if (reduceMotion()) return;
+    const card = ev.target.closest('.stat');
+    if (!card) return;
+    const r = card.getBoundingClientRect();
+    const px = (ev.clientX - r.left) / r.width;
+    const py = (ev.clientY - r.top) / r.height;
+    const rx = (py - 0.5) * -14;
+    const ry = (px - 0.5) * 14;
+    card.style.setProperty('--srx', `${rx.toFixed(2)}deg`);
+    card.style.setProperty('--sry', `${ry.toFixed(2)}deg`);
+    card.style.setProperty('--smx', `${(px * 100).toFixed(1)}%`);
+    card.style.setProperty('--smy', `${(py * 100).toFixed(1)}%`);
+    card.style.transform = `translateY(-4px) perspective(1000px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) translateZ(16px)`;
+  });
+
+  statsSec.addEventListener('pointerout', ev => {
+    const card = ev.target.closest('.stat');
+    if (card && !card.contains(ev.relatedTarget)) {
+      card.style.setProperty('--srx', '0deg');
+      card.style.setProperty('--sry', '0deg');
+      card.style.transform = '';
+    }
+  });
+}
+
+// 2. Source cards 3D tilt
+if (els.sourceGrid) {
+  els.sourceGrid.addEventListener('pointermove', ev => {
+    if (reduceMotion()) return;
+    const card = ev.target.closest('.source-card');
+    if (!card) return;
+    const r = card.getBoundingClientRect();
+    const px = (ev.clientX - r.left) / r.width;
+    const py = (ev.clientY - r.top) / r.height;
+    const rx = (py - 0.5) * -12;
+    const ry = (px - 0.5) * 12;
+    card.style.setProperty('--srx', `${rx.toFixed(2)}deg`);
+    card.style.setProperty('--sry', `${ry.toFixed(2)}deg`);
+    card.style.setProperty('--smx', `${(px * 100).toFixed(1)}%`);
+    card.style.setProperty('--smy', `${(py * 100).toFixed(1)}%`);
+    card.style.transform = `translateY(-4px) perspective(1000px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) translateZ(16px)`;
+  });
+
+  els.sourceGrid.addEventListener('pointerout', ev => {
+    const card = ev.target.closest('.source-card');
+    if (card && !card.contains(ev.relatedTarget)) {
+      card.style.setProperty('--srx', '0deg');
+      card.style.setProperty('--sry', '0deg');
+      card.style.transform = '';
+    }
+  });
+}
+
+// 3. CLI Terminal 3D tilt & Holographic glitch pulse
+if (cliTerm) {
+  cliTerm.addEventListener('pointermove', ev => {
+    if (reduceMotion()) return;
+    const r = cliTerm.getBoundingClientRect();
+    const px = (ev.clientX - r.left) / r.width;
+    const py = (ev.clientY - r.top) / r.height;
+    const rx = (py - 0.5) * -8;
+    const ry = (px - 0.5) * 8;
+    cliTerm.style.transform = `perspective(1000px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) scale3d(1.01, 1.01, 1.01)`;
+  });
+
+  cliTerm.addEventListener('pointerleave', () => {
+    cliTerm.style.transform = '';
+  });
+
+  // Random holographic glitch pulse
+  setInterval(() => {
+    if (reduceMotion()) return;
+    const glitches = cliTerm.querySelectorAll('.glitch');
+    glitches.forEach(g => g.classList.add('active'));
+    setTimeout(() => {
+      glitches.forEach(g => g.classList.remove('active'));
+    }, 400);
+  }, 5000);
+}
 
 // reveal-on-scroll (our own AOS) + section title underline draws
 const revealIO = new IntersectionObserver(
@@ -656,7 +815,7 @@ const revealIO = new IntersectionObserver(
 );
 document.querySelectorAll('[data-reveal]').forEach(el => revealIO.observe(el));
 
-// stat count-up — easeOutExpo, tabular numerals keep it steady
+// stat count-up — easeOutExpo, tabular numerals keep it steady + 3D pop on finish
 const statsIO = new IntersectionObserver(ents => {
   if (!ents[0].isIntersecting) return;
   statsIO.disconnect();
@@ -668,11 +827,17 @@ const statsIO = new IntersectionObserver(ents => {
       const p = Math.min((now - t0) / dur, 1);
       const eased = 1 - Math.pow(2, -10 * p);
       el.textContent = Math.round(target * (p === 1 ? 1 : eased)).toLocaleString();
-      if (p < 1) requestAnimationFrame(tick);
+      if (p < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        const parent = el.closest('.stat');
+        if (parent && !reduceMotion()) {
+          parent.style.animation = 'statPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        }
+      }
     })(t0);
   }
 }, { threshold: 0.4 });
-const statsSec = document.querySelector('.stats');
 if (statsSec) statsIO.observe(statsSec);
 
 // terminal typewriter — lines cascade in when the CLI section scrolls into view

@@ -78,17 +78,21 @@
     </section>
 
     <!-- ============ stats ============ -->
-    <section class="stats" aria-label="Index statistics">
+    <section class="stats" id="statsSec" aria-label="Index statistics">
       <div class="stat" style="--c:#8b5cf6" data-reveal>
+        <div class="stat-glow" aria-hidden="true"></div>
         <b data-count="totalAnimsStat">0</b><span>animations</span>
       </div>
       <div class="stat" style="--c:#22d3ee" data-reveal>
+        <div class="stat-glow" aria-hidden="true"></div>
         <b data-count="sitesStat">0</b><span>sources</span>
       </div>
       <div class="stat" style="--c:#f472b6" data-reveal>
+        <div class="stat-glow" aria-hidden="true"></div>
         <b data-count="catsStat">0</b><span>categories</span>
       </div>
       <div class="stat" style="--c:#fbbf24" data-reveal>
+        <div class="stat-glow" aria-hidden="true"></div>
         <b data-count="liveStat">0</b><span>live handshakes</span>
       </div>
     </section>
@@ -155,9 +159,11 @@
         When a site refuses the polite handshake, the CLI falls back to scraping, then to
         the last successful snapshot. It always comes home with data.
       </p>
-      <div class="term">
-        <div class="term-bar"><i></i><i></i><i></i><span>motiondex — refresh</span></div>
-        <pre class="term-body"><code><span class="t-prompt">$</span> node cli/refresh.mjs
+      <div class="term" id="cliTerm">
+        <div class="term-scanline" aria-hidden="true"></div>
+        <div class="term-glow-mesh" aria-hidden="true"></div>
+        <div class="term-bar"><i></i><i></i><i></i><span class="glitch" data-text="motiondex — refresh">motiondex — refresh</span></div>
+        <pre class="term-body"><code><span class="t-prompt glitch" data-text="$">$</span> node cli/refresh.mjs
 
   🤝 live     662 entries from <span class="t-site">animista</span>    (animista.json — official catalog)
   🤝 live     102 entries from <span class="t-site">animatecss</span>  (animate.min.css — raw CSS parse)
