@@ -492,39 +492,122 @@ function showToast(msg) {
   toastTimer = setTimeout(() => els.toast.classList.remove('show'), 2200);
 }
 
-/* ------------------------------ 3D tilt + spotlight on cards ------------------------------ */
+/* ------------------------------ 3D tilt + magnetic cursor + spotlight on cards ------------------------------ */
 
 const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-const tiltRaf = { pending: false, card: null, x: 0, y: 0, mx: 0, my: 0 };
+
+// Magnetic card attraction state
+const magnetic = { cards: new Map(), raf: false };
+
+function updateMagneticCards() {
+  magnetic.raf = false;
+  magnetic.cards.forEach((state, card) => {
+    // Spring physics: smoothly interpolate toward target
+    state.cx += (state.tx - state.cx) * 0.12;
+    state.cy += (state.ty - state.cy) * 0.12;
+    state.rx += (state.trx - state.rx) * 0.1;
+    state.ry += (state.try_ - state.ry) * 0.1;
+
+    card.style.setProperty('--rx', `${state.rx.toFixed(2)}deg`);
+    card.style.setProperty('--ry', `${state.ry.toFixed(2)}deg`);
+    card.style.setProperty('--mx', `${state.mlx.toFixed(0)}px`);
+    card.style.setProperty('--my', `${state.mly.toFixed(0)}px`);
+    card.style.transform = `perspective(760px) rotateX(${state.rx.toFixed(2)}deg) rotateY(${state.ry.toFixed(2)}deg) translate(${state.cx.toFixed(1)}px, ${state.cy.toFixed(1)}px)`;
+
+    // Keep animating if not settled
+    const settled = Math.abs(state.tx - state.cx) < 0.1 && Math.abs(state.ty - state.cy) < 0.1;
+    if (!settled && !magnetic.raf) {
+      magnetic.raf = true;
+      requestAnimationFrame(updateMagneticCards);
+    }
+  });
+}
+
 els.grid.addEventListener('pointermove', ev => {
   if (ev.pointerType === 'touch' || reduceMotion()) return;
   const card = ev.target.closest('.card');
   if (!card) return;
+
   const r = card.getBoundingClientRect();
-  tiltRaf.card = card;
-  tiltRaf.x = ((ev.clientY - r.top) / r.height - 0.5) * -7;
-  tiltRaf.y = ((ev.clientX - r.left) / r.width - 0.5) * 9;
-  tiltRaf.mx = ev.clientX - r.left;
-  tiltRaf.my = ev.clientY - r.top;
-  if (!tiltRaf.pending) {
-    tiltRaf.pending = true;
-    requestAnimationFrame(() => {
-      const s = tiltRaf.card.style;
-      s.setProperty('--rx', `${tiltRaf.x.toFixed(2)}deg`);
-      s.setProperty('--ry', `${tiltRaf.y.toFixed(2)}deg`);
-      s.setProperty('--mx', `${tiltRaf.mx.toFixed(0)}px`);
-      s.setProperty('--my', `${tiltRaf.my.toFixed(0)}px`);
-      tiltRaf.pending = false;
-    });
+  const centerX = r.left + r.width / 2;
+  const centerY = r.top + r.height / 2;
+
+  // Tilt angles
+  const tiltX = ((ev.clientY - r.top) / r.height - 0.5) * -10;
+  const tiltY = ((ev.clientX - r.left) / r.width - 0.5) * 12;
+
+  // Magnetic pull (card center moves slightly toward cursor)
+  const pullX = (ev.clientX - centerX) * 0.06;
+  const pullY = (ev.clientY - centerY) * 0.06;
+
+  let state = magnetic.cards.get(card);
+  if (!state) {
+    state = { cx: 0, cy: 0, tx: 0, ty: 0, rx: 0, ry: 0, trx: 0, try_: 0, mlx: 0, mly: 0 };
+    magnetic.cards.set(card, state);
+  }
+
+  state.tx = pullX;
+  state.ty = pullY;
+  state.trx = tiltX;
+  state.try_ = tiltY;
+  state.mlx = ev.clientX - r.left;
+  state.mly = ev.clientY - r.top;
+
+  if (!magnetic.raf) {
+    magnetic.raf = true;
+    requestAnimationFrame(updateMagneticCards);
   }
 });
+
 els.grid.addEventListener('pointerout', ev => {
   const card = ev.target.closest('.card');
   if (card && !card.contains(ev.relatedTarget)) {
-    card.style.setProperty('--rx', '0deg');
-    card.style.setProperty('--ry', '0deg');
+    const state = magnetic.cards.get(card);
+    if (state) {
+      state.tx = 0; state.ty = 0; state.trx = 0; state.try_ = 0;
+      if (!magnetic.raf) {
+        magnetic.raf = true;
+        requestAnimationFrame(updateMagneticCards);
+      }
+    }
+    // Reset after spring settles
+    setTimeout(() => {
+      card.style.transform = '';
+      card.style.setProperty('--rx', '0deg');
+      card.style.setProperty('--ry', '0deg');
+    }, 400);
   }
 });
+
+/* ------------------------------ card entrance observer ------------------------------ */
+
+const cardRevealIO = new IntersectionObserver(
+  entries => {
+    entries.forEach((entry, i) => {
+      if (!entry.isIntersecting) return;
+      const card = entry.target;
+      // Stagger from the batch
+      const delay = (Array.from(card.parentElement.children).indexOf(card) % 6) * 60;
+      card.style.animationDelay = `${delay}ms`;
+      card.classList.add('card-visible');
+      cardRevealIO.unobserve(card);
+    });
+  },
+  { threshold: 0.08, rootMargin: '50px' },
+);
+
+// Re-observe cards after each render
+const origRenderMore = renderMore;
+renderMore = function() {
+  const prevCount = els.grid.children.length;
+  origRenderMore();
+  // Observe newly added cards
+  for (let i = prevCount; i < els.grid.children.length; i++) {
+    const card = els.grid.children[i];
+    card.classList.remove('card-visible');
+    cardRevealIO.observe(card);
+  }
+};
 
 /* ------------------------------ infinite scroll ------------------------------ */
 

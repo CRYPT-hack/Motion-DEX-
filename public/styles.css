@@ -67,6 +67,15 @@ body::after {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
+/* ambient particle canvas */
+#ambientParticles {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.55;
+}
+
 ::selection { background: rgba(139, 92, 246, 0.45); color: #fff; }
 
 a { color: inherit; text-decoration: none; }
@@ -454,9 +463,26 @@ code, kbd {
   cursor: pointer;
   transform-style: preserve-3d;
   transform: perspective(760px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--ty, 0));
-  transition: transform 0.18s ease-out, border-color 0.25s, box-shadow 0.25s;
-  animation: cardIn 0.55s var(--easeOut) backwards;
-  animation-delay: calc(min(var(--i, 0), 12) * 38ms);
+  transition: border-color 0.25s, box-shadow 0.25s;
+  /* Start hidden for IO-driven reveal */
+  opacity: 0;
+  filter: blur(6px);
+  will-change: transform, opacity, filter;
+}
+.card.card-visible {
+  animation: cardRevealIn 0.65s var(--easeOut) forwards;
+}
+@keyframes cardRevealIn {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(30px) scale(0.94) perspective(760px) rotateX(4deg);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0) scale(1) perspective(760px) rotateX(0deg);
+  }
 }
 @keyframes cardIn { from { opacity: 0; transform: translateY(22px) scale(0.96); } }
 
