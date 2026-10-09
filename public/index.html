@@ -7,6 +7,14 @@
   <meta name="description" content="One search across 20+ free animation sites — Animista, LottieFiles, Uiverse, Animate.css, Loading.io, Swishy AI and more. Find an animation, land on the exact page." />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="/styles.css" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    }
+  }
+  </script>
 </head>
 <body>
   <!-- scroll progress -->
@@ -33,6 +41,9 @@
   <main id="top">
     <!-- ============ hero ============ -->
     <section class="hero" id="hero">
+      <div class="hero-canvas-wrap" id="heroCanvasWrap" aria-hidden="true">
+        <canvas id="heroCanvas"></canvas>
+      </div>
       <p class="hero-badge reveal" style="--i:0">
         <span class="dot-live"></span> live handshake with <b id="liveCount">…</b> sites ·
         <b id="totalAnims">…</b> animations indexed
@@ -193,5 +204,12 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="/app.js"></script>
+  <script type="module">
+    import { initScene } from '/scene.js';
+    // Wait for DOM + fonts then fire up the 3D scene
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      requestAnimationFrame(() => initScene(document.getElementById('heroCanvas')));
+    }
+  </script>
 </body>
 </html>

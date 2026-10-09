@@ -147,6 +147,23 @@ code, kbd {
 }
 .pill b { color: var(--text); }
 
+/* ============================== hero 3D canvas ============================== */
+
+.hero-canvas-wrap {
+  position: absolute;
+  inset: -60px -10% -40px;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  mask-image: radial-gradient(ellipse 70% 65% at 50% 42%, #000 25%, transparent 72%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 65% at 50% 42%, #000 25%, transparent 72%);
+}
+.hero-canvas-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
 /* ============================== hero ============================== */
 
 .hero {
